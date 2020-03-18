@@ -3,21 +3,44 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("github-form");
   const search = document.getElementById("search");
   const githubUserList = document.getElementById("user-list");
+  const reposList = document.getElementById("repos-list");
+
+  const getRepoList = json => {
+    console.log(json);
+    json.forEach(row => {
+      let repo = document.createElement("li");
+      repo.innerText = row.name;
+      reposList.appendChild(repo);
+    });
+  };
 
   const createUser = json => {
     console.log(json);
-    let user = document.createElement("li");
-    user.innerText = json.items[0].login;
-    githubUserList.appendChild(user);
+    let user = document.createElement("div");
+
+    let username = document.createElement("li");
+    username.setAttribute("class", "user");
+    username.innerText = json.items[0].login;
+    user.appendChild(username);
 
     let githubUrl = document.createElement("a");
     githubUrl.innerHTML = "github url";
     githubUrl.href = json.items[0].html_url;
-    githubUserList.appendChild(githubUrl);
+    user.appendChild(githubUrl);
 
     let avatar = document.createElement("img");
     avatar.src = json.items[0].avatar_url;
-    githubUserList.appendChild(avatar);
+    user.appendChild(avatar);
+
+    githubUserList.append(user);
+
+    user.addEventListener("click", () => {
+      let username = json.items[0].login;
+      const API = `https://api.github.com/users/${username}/repos`;
+      fetch(API)
+        .then(response => response.json())
+        .then(repo => getRepoList(repo));
+    });
   };
 
   const LoadUserInfo = event => {
